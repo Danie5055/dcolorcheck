@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NAEL Color Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e0f7fa);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .navbar {
+      background-color: #007bff;
+      color: white;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .navbar img {
+      height: 40px;
+      width: 40px;
+      border-radius: 50%;
+    }
+
+    .container {
+      margin-top: 20px;
+      padding: 20px;
+    }
+
+    .description {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #333;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    form {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .upload-area {
+      border: 2px dashed #007bff;
+      padding: 40px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .upload-area.dragover {
+      background: #d6efff;
+    }
+
+    .upload-text {
+      font-size: 16px;
+      color: #555;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    input[type="submit"] {
+      background-color: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #218838;
+    }
+
+    .preview-image {
+      margin: 30px auto;
+      max-width: 90%;
+      height: auto;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .color-palette {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .color-block {
+      width: 100px;
+      height: 100px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      border: 1px solid #ccc;
+      transition: transform 0.2s ease;
+    }
+
+    .color-block:hover {
+      transform: scale(1.05);
+    }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      padding: 40px 20px;
+      margin-top: 60px;
+    }
+
+    .footer-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 30px;
+      max-width: 1000px;
+      margin: auto;
+      text-align: left;
+    }
+
+    .footer-logo img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .footer-section h4 {
+      margin-bottom: 10px;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 8px;
+    }
+
+    .footer-section ul li a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .footer-section ul li a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    @media (max-width: 600px) {
+      .color-block { width: 80px; height: 80px; }
+      form { padding: 20px; }
+      .footer-container {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="navbar">
+    <img src="{{ url_for('static', filename='images/nael_logo.png') }}" alt="NAEL Logo">
+    NAEL AI Color Checker
+  </div>
+
+  <!-- Body -->
+  
+      <div class="container">
+    <div class="description">
+      <p><strong>Dominant Color Checker Artificial Intelligence (CCH AI)</strong> is a smart image analysis system that detects and displays the top 3 dominant colors in an image.</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="upload-form">
+      <label for="photo">
+        <div class="upload-area" id="drop-area">
+          <p class="upload-text" id="upload-text">Drag & Drop Image Here or Click to Select</p>
+        </div>
+      </label>
+      <input type="file" name="photo" id="photo" accept="image/*" required>
+      <input type="submit" value="Detect Colors">
+    </form>
+
+    {% if image %}
+      <h2>Checked Image</h2>
+      <img src="{{ url_for('static', filename='uploads/' ~ image) }}" class="preview-image" alt="Uploaded Image">
+
+      <h2>Top 3 Dominant Colors</h2>
+      <div class="color-palette">
+        {% for color in colors %}
+          <div>
+            <div class="color-block" style="background-color: rgb({{ color.rgb[0] }}, {{ color.rgb[1] }}, {{ color.rgb[2] }});"></div>
+            <div style="margin-top: 8px; font-weight: bold;">{{ color.name }}</div>
+            <div style="font-size: 14px; color: #555;">{{ color.percent }}%</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div id="preview-container" style="display:none;">
+        <h2>Preview</h2>
+        <img id="preview-image" class="preview-image" alt="Image Preview">
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-section footer-logo">
+        <img src="{{ url_for('static', filename='images/nael_logo.png') }}" alt="NAEL Logo">
+        <p><strong>NAEL SOLUTIONS</strong><br> Empowering digital learning with AI and smart technologies.</p>
+      </div>
+
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About NAEL</a></li>
+        </ul>
+        <h4>Browse the Link:</h4>
+        <ul>
+          <li><a href="#">naeldsolutions.netlify.app</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <ul>
+          <li>Email: daniedushimire@gmail.com</li>
+          <li>WhatsApp: 0726584268</li>
+          <li>Address: Kigali City</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+
+      <p> CCH AI developed by Daniel Dushimirimana.</p>
+      &copy; 2025 NAEL SOLUTIONS. All Rights Reserved.
+    </div>
+  </footer>
+
+  <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('photo');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImage = document.getElementById('preview-image');
+
+    dropArea.addEventListener('click', () => fileInput.click());
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.classList.add('dragover');
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.classList.remove('dragover');
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        showPreview(file);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) {
+        showPreview(fileInput.files[0]);
+      }
+    });
+
+    function showPreview(file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        previewImage.src = e.target.result;
+        previewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+
+</body>
+</html>
