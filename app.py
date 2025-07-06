@@ -206,6 +206,7 @@ def get_dominant_colors(image, k=3):
     return color_data
 
 
+@app.route('/', methods=['GET', 'POST'])
 
 
 def index():
