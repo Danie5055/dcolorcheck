@@ -1,7 +1,7 @@
 services:
   - type: web
-    name: nael-color-checker
+    name: dominant-colors-app
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
+    startCommand: "gunicorn app:app"
     plan: free
