@@ -175,10 +175,17 @@ def get_color_name(rgb):
             min_colors[distance] = name
         return min_colors[min(min_colors.keys())]
 
+
+
 def get_dominant_colors(image, k=3):
+    # Resize image to reduce memory usage on Render
+    image = cv2.resize(image, (100, 100))
+
+    # Convert image to RGB and flatten
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = image.reshape((-1, 3))
 
+    # Run KMeans clustering
     kmeans = KMeans(n_clusters=k, n_init=10)
     kmeans.fit(image)
 
@@ -188,25 +195,19 @@ def get_dominant_colors(image, k=3):
 
     color_data = []
 
-    for idx, label in enumerate(labels):
+    for label, count in zip(labels, counts):
         rgb = tuple(map(int, kmeans.cluster_centers_[label]))
-        percent = round((counts[idx] / total) * 100, 2)
+        percent = round((count / total) * 100, 2)
         name = get_color_name(rgb)
         color_data.append({'rgb': rgb, 'name': name, 'percent': percent})
 
+    # Sort colors by percentage in descending order
     color_data.sort(key=lambda x: x['percent'], reverse=True)
     return color_data
 
-    for i in range(k):
-        rgb = tuple(map(int, kmeans.cluster_centers_[i]))
-        percent = round((counts[i] / total) * 100, 2)
-        name = get_color_name(rgb)
-        color_data.append({'rgb': rgb, 'name': name, 'percent': percent})
 
-    color_data.sort(key=lambda x: x['percent'], reverse=True)
-    return color_data
 
-@app.route('/', methods=['GET', 'POST'])
+
 def index():
     image_filename = None
     colors = []
